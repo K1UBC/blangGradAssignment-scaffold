@@ -31,7 +31,34 @@ public class PermutationSampler implements Sampler {
   @Override
   public void execute(Random rand) {
     // Fill this. 
-  }
+	//Density current - Q(X)
+	  double densityBefore = logDensity();
+	  
+	//generate random pairs and swap two vertices to produce a random proposal outcome
+	//I used Dr.Bouchard's permutation solution as a reference to build this code
+	  UnorderedPair<Integer, Integer> pair= Generators.distinctPair(rand, permutation.componentSize());
+	  Collections.swap(permutation.getConnections(), pair.getFirst(), pair.getSecond());
+	 
+	 //Density proposal - Q(Y)
+	  double densityAfter = logDensity();
+	  
+	 //We are using MH, hence we need to define acceptance rate to apply MH method
+	 //Since proposal density and current density are symmetric, Q(X|Y) and Q(Y|X) cancel out each other and leave only Q(X) and Q(Y) in the acceptance rate formula
+	  double acceptanceRate = Math.min(1, Math.exp(densityAfter - densityBefore));
+	 
+	  //Here, I generated boolean so we can determine if we accept the new state or get back to the current state and repeat the experiment
+	  //Also I used Dr.Bouchard's permutation solution to correct my code for the boolean
+	  boolean accept = rand.nextBernoulli(acceptanceRate);
+	 
+	  //if we accept the new state, we do not need to take any additional actions
+	 if (accept) {
+	 ;
+	 }
+	 else {
+	 //if we do not accept the new state, it should be reversed back to the current state
+		 Collections.swap(permutation.getConnections(), pair.getFirst(), pair.getSecond());		 
+	 }
+   }
   
   private double logDensity() {
     double sum = 0.0;
