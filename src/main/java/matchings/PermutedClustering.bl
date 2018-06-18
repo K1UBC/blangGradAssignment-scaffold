@@ -5,6 +5,7 @@ import matchings.Permutation
 model PermutedClustering {
   param Integer nGroups
   param Integer groupSize
+  random RealVar lbFactor ?: latentReal()
   random List<RealVar> means ?: latentRealList(groupSize)
   random List<RealVar> variances ?: latentRealList(groupSize)
   random List<Permutation> permutations ?: {
@@ -14,8 +15,27 @@ model PermutedClustering {
     return result
   }
   random Matrix observations ?: latentMatrix(nGroups, groupSize)
+   
   
   laws {
-    // Fill this. 
+  	// Distributions of variances and means of all players
+    variances.get(0) ~ Exponential(10.0)
+    means.get(0) ~ ContinuousUniform(0.0, 1.0)
+    
+    // Means of the scores of players are incrementally uniformly continuous-distributed from the weakest to strongest
+    for (Integer i: 1 ..< groupSize) {
+      means.get(i) | RealVar previous = means.get(i-1) ~ ContinuousUniform(previous, previous + 1)
+      variances.get(i) ~ Exponential(10.0)
+    }
+ 	
+ 	//nGroups is the a number of games played while the groupSize stands for the number of players in each round
+    for (Integer i: 0 ..< nGroups) {
+      permutations.get(i) ~ UniformPermutation
+      for (Integer j: 0 ..< groupSize) {
+        observations.getRealVar(i,j) | Permutation perm = permutations.get(i), means, variances, j ~ Normal(
+          means.get(perm.getConnections.get(j)),
+          variances.get(perm.getConnections.get(j)))
+          }
+    }
   }
 }
