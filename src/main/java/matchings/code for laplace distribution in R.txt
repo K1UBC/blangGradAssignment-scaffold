@@ -1,0 +1,15 @@
+# Probability Density Function
+dlaplace = function(x,mu,b){
+  density = (1/(2*b))*(-(abs(x-mu)/b))
+}
+
+# Cumulative Distribution Function
+plap = function(x,mu,b){
+  if(x<mu){
+    cdf1 = (0.5)*((x-mu)/b)
+    
+  }
+  if(x>=mu){
+    cdf2 =(0.5)*(-(x-mu)/b)
+  }
+}
